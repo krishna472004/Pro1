@@ -1,0 +1,108 @@
+Cloud
+
+//
+
+
+FROM nginx 
+COPY index.html /usr/share/nginx/html
+
+
+docker build -t dockerfilesample .
+docker run -p 8080:80 dockerfilesample
+
+//
+
+docker build -t docker-demo:1.0 .
+docker images
+docker tag 9d7b5c9b6d1c your_username/docker-demo:1.0
+docker images
+docker push your_username/docker-demo:1.0
+docker pull your_username/docker-demo:1.0
+
+//
+
+server { 
+listen 80; 
+
+
+ 
+server_name localhost; 
+location / { 
+root /usr/share/nginx/html; 
+index index.html; 
+} 
+}
+
+//
+
+version: "3.9"
+
+services:
+  web-node-1:
+    image: nginx:latest
+    container_name: web-node-1
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8081:80"
+    networks:
+      - html-cluster
+
+  web-node-2:
+    image: nginx:latest
+    container_name: web-node-2
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8082:80"
+    networks:
+      - html-cluster
+
+  web-node-3:
+    image: nginx:latest
+    container_name: web-node-3
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8083:80"
+    networks:
+      - html-cluster
+
+networks:
+  html-cluster:
+    driver: bridge
+
+
+//
+
+docker-compose up -d
+
+//
+
+
+docker swarm init --default-addr-pool 10.20.0.0/16
+docker service create --name webapp --replicas 3 -p 8080:80 nginx:1.17.6
+docker service scale webapp=5
+docker service update --image nginx:1.19.8 webapp
+docker service ls --filter name=webapp
+docker swarm leave –force
+docker system prune -a –volumes
+
+//
+
+kubectl config get-contexts
+kubectl config use-context docker-desktop
+
+//
+
+minikube start --driver=docker
+kubectl cluster-info 
+kubectl create deployment nginx-deployment --image=nginx
+kubectl get pods
+kubectl expose deployment nginx-deployment --port=80 --type=NodePort
+minikube service nginx-deployment --url
+
+//
